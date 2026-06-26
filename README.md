@@ -10,14 +10,15 @@ This repository contains an end-to-end data science pipeline focused on data cle
 
 # Directory Tree: AirBnb
 ```
-📂 data
-├── 📄 AirBnBLimpo_London.csv
-├── 📄 AirBnBLimpo_New-york-city.csv
-└── 📄 AirBnBLimpo.csv
-📂 notebooks
-├── 📓 01_rio_de_janeiro_analysis.ipynb
-├── 📓 02_world_cities_analysis.ipynb
-└── 📝 readme.md
+📂 Air-BnB
+├── 📂 data
+│   ├── 📄 AirBnBLimpo_London.csv
+│   ├── 📄 AirBnBLimpo_New-york-city.csv
+│   └── 📄 AirBnBLimpo.csv
+├── 📂 notebooks
+│   ├── 📓 01_rio_de_janeiro_analysis.ipynb
+│   ├── 📓 02_world_cities_analysis.ipynb
+│   └── 📝 readme.md
 ├── 📂 src
 ├── 🐍 app.py (work in progress)
 └── 📝 README.md
