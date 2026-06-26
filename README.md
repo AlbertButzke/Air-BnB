@@ -8,6 +8,21 @@
 
 This repository contains an end-to-end data science pipeline focused on data cleaning, exploratory analysis, and building predictive models to forecast both **listing prices** and **user ratings** across global markets.
 
+# Estrutura do Projeto: AirBnb / Air-BnB
+
+📂 AirBnb / Air-BnB
+├── 📂 data
+│   ├── 📄 AirBnBLimpo_London.csv
+│   ├── 📄 AirBnBLimpo_New-york-city.csv
+│   └── 📄 AirBnBLimpo.csv
+├── 📂 notebooks
+│   ├── 📓 01_rio_de_janeiro_analysis.ipynb
+│   ├── 📓 02_world_cities_analysis.ipynb
+│   └── 📝 readme.md
+├── 📂 src
+├── 🐍 app.py (work in progress)
+└── 📝 README.md
+
 ## Project Scope
 The analytical pipeline is split into two distinct execution environments to handle regional data variations:
 * **Rio de Janeiro:** A localized study analyzing 40,769 entries. This pipeline includes robust data cleaning, outlier removal, and localized risk-assessment features (such as neighborhood safety metrics).
