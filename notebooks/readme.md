@@ -8,5 +8,5 @@ Optar por classificação, uma quebra mais inteligente e alinhada ao negócio se
 Recomendações:
 Em vez de escolher um ou outro puramente, a melhor prática para dados do Airbnb costuma ser:
 - Regressão com algoritmo robusto a outliers/assimetria: Use modelos de árvore como XGBoost, LightGBM ou CatBoost configurados para regressão. Eles lidam muito bem com essa assimetria de notas altas sem precisar categorizar os dados.
-- Métrica de Avaliação Certa: Não use apenas o MSE (Mean Squared Error), pois ele penaliza demais erros grandes em notas baixas raras. Monitore o MAE (Mean Absolute Error).
-- Abordagem Ordinal (Se quiser classificar): Se for mesmo usar intervalos, utilize Classificação Ordinal (onde o modelo sabe que a classe 4 está mais perto da 5 do que da 1), e não multiclass pura.
+- Métrica de Avaliação Certa: Não usar apenas o MSE (Mean Squared Error), pois ele penaliza demais erros grandes em notas baixas raras. Monitore o MAE (Mean Absolute Error).
+- Abordagem Ordinal: Se for mesmo usar intervalos, utilizar Classificação Ordinal (onde o modelo sabe que a classe 4 está mais perto da 5 do que da 1), e não multiclass pura.

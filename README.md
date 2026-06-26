@@ -1,14 +1,38 @@
-# Listing Price & Rating Prediction
+# Airbnb Listing Price & Rating Prediction
 
-This repository contains an end-to-end data science pipeline focused on cleaning raw listing data and building predictive models to forecast both **listing prices** and **user ratings**.
+This repository contains an end-to-end data science pipeline focused on data cleaning, exploratory analysis, and building predictive models to forecast both **listing prices** and **user ratings** across global markets.
 
 ## Project Scope
-The project is split into two distinct analysis environments:
-* **Rio de Janeiro:** A localized study focusing on the specific neighborhood (dangerous or not) and pricing factors of Rio de Janeiro.
-* **Global Cities:** While the analytical core remains the same as the Rio pipeline, **without** the data cleaning done for Rio de Janeiro, which was needed to respect regional data variations and distributions.
+The analytical pipeline is split into two distinct execution environments to handle regional data variations:
+* **Rio de Janeiro:** A localized study analyzing 40,769 entries. This pipeline includes robust data cleaning, outlier removal, and localized risk-assessment features (such as neighborhood safety metrics).
+* **Global Cities:** A generalized pipeline built to scale across other cities worldwide. It maintains the core analytical structure but bypasses the specific Rio cleaning steps to respect unique global data distributions ($R^2$ performance ranges consistently from 0.40 to 0.60).
 
 ## Key Features
-* **Data Cleaning & Preprocessing:** Handling missing values, filtering outliers, and domain-specific feature engineering.
-* **Exploratory Data Analysis (EDA):** In-depth visualizations showing key market trends, and correlations.
-* **Price Prediction:** Regression models tailored to estimate listing values based on their characteristics.
-* **Rating Modeling:** Classification and regression approaches to predict and understand user satisfaction scores.
+* **Data Cleaning & Preprocessing:** Handling missing values, targeted outlier filtering, and domain-specific feature engineering.
+* **Exploratory Data Analysis (EDA):** Visualizations mapping out key market trends, geographical pricing concentrations, and feature correlations.
+* **Segmented Price Prediction:** Regression modeling built dynamically around property room types to capture varying market mechanics.
+* **Rating Modeling (WIP):** Benchmarking framework comparing multiclass classification vs. regression architectures to predict user satisfaction.
+
+## Model Performance (Rio de Janeiro)
+
+To predict listing prices, models were trained on the cleaned data and benchmarked against a Dummy Regressor baseline ($R^2 \approx 0.00$). Advanced algorithms like **XGBoost** and **Decision Trees** significantly outperformed baseline and linear shrinkage methods (**Lasso**).
+
+### Overall Performance (Cleaned Dataset)
+* **XGBoost Regressor:** $R^2 = 0.5169$
+* **Decision Tree Regressor:** $R^2 = 0.4255$
+
+### Segmented Analysis by Room Type
+Market dynamics shift heavily based on the type of accommodation. Segmenting the data revealed that entire properties are far more predictable than shared spaces:
+
+| Room Type | Decision Tree ($R^2$) | XGBoost ($R^2$) |
+| :--- | :---: | :---: |
+| **Entire home/apt** | 0.4200 | **0.4884** |
+| **Private room** | 0.1375 | **0.2198** |
+| **Shared room** | 0.0394 | **0.3219** |
+
+---
+
+## Work in Progress: Rating Prediction
+The pipeline is currently being expanded to tackle user rating forecasting. The next phase will benchmark the performance of:
+1. **Regression Models** (predicting exact continuous rating scores).
+2. **Multiclass Classification Models** (predicting rating brackets/tiers).
