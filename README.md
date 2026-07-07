@@ -52,6 +52,46 @@ Market dynamics shift heavily based on the type of accommodation. Segmenting the
 | **Private room** | 0.1375 | **0.2198** |
 | **Shared room** | 0.0394 | **0.3219** |
 
+## Performance & Load Testing (AWS Lambda)
+
+The global XGBoost model was deployed as a serverless function on **AWS Lambda** and subjected to a load test using **Locust** to evaluate its behavior, throughput, and latency under continuous traffic. 
+
+The inference pipeline loads the trained model using `joblib` inside the Lambda environment.
+
+### 📊 Test Configuration & Environment
+* **Infrastructure:** AWS Lambda
+* **Deployment Packaging:** Trained XGBoost model loaded via `joblib`
+* **Load Testing Tool:** Locust
+* **Simulated Users:** 20 maximum concurrent users
+* **Spawn Rate:** 2 users/second
+
+---
+
+### Load Test Results & Metrics
+
+The pipeline successfully handled continuous traffic with **zero failures** under the simulated load. Below are the key performance indicators extracted from the test run:
+
+#### Request Statistics
+| Type | Endpoint | Total Requests | Failures | Average Latency | Min Latency | Max Latency (Cold Start) | Throughput (RPS) |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **POST** | `/predict` | **5,582** | **0** | **57.79 ms** | **31 ms** | **4,601 ms** | **9.67 req/s** |
+
+#### Response Time Percentiles (Latency Distribution)
+| 50% (Median) | 60% | 70% | 80% | 90% | 95% | 99% | 100% ($p_{100}$) |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **43 ms** | 46 ms | 50 ms | 56 ms | 81 ms | 110 ms | 130 ms | **4,600 ms** |
+
+---
+
+### Key Findings & Production Insights
+
+1. **Ultra-Low Steady State Latency:** In steady-state conditions, the model demonstrates exceptional performance. The median latency ($p_{50}$) is only **43 ms**, and even at the 99th percentile ($p_{99}$), the response time stays low at **130 ms**.
+2. **The Cold Start Phenomenon:** The maximum recorded latency reached **4.6 seconds** ($p_{100}$). As clearly shown in the *Response Times* chart, this was an isolated spike at the very beginning of the test window, directly corresponding to the initial AWS Lambda container provisioning (Cold Start) and the overhead of loading the `joblib` model into memory.
+3. **High Reliability:** The system maintained a rock-solid **100% success rate** (0 failures out of 5,582 requests) throughout the duration of the test, maintaining a stable throughput of ~9.67 RPS with 20 concurrent users.
+
+### Production Mitigation for Scale
+In a large-scale production scenario (similar to Airbnb), the 4.6-second Cold Start latency observed at the $p_{100}$ level would be fully mitigated by leveraging **AWS Provisioned Concurrency** (keeping warm Lambda instances initialized) or migrating the containerized inference pipeline to a **Kubernetes (EKS)** cluster with always-on nodes. This architectural adjustment guarantees sub-150ms latency for 100% of end-users.
+
 ---
 
 ## Work in Progress: Rating Prediction

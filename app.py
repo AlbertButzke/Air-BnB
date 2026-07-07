@@ -3,6 +3,8 @@ import pandas as pd
 import plotly.express as px
 import folium
 from pathlib import Path
+from streamlit_plotly_events import plotly_events
+import plotly.graph_objects as go
 
 st.set_page_config(
     page_title="Dashboard de Anúncios no AirBnB",
@@ -10,80 +12,293 @@ st.set_page_config(
     layout="wide",
 )
 
-st.logo(
-    image="https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Airbnb_Logo_B%C3%A9lo.svg/3840px-Airbnb_Logo_B%C3%A9lo.svg.png",
-    link="https://www.airbnb.com.br",
-    size='large'
-)
+# st.logo(
+#     image="https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Airbnb_Logo_B%C3%A9lo.svg/3840px-Airbnb_Logo_B%C3%A9lo.svg.png",
+#     link="https://www.airbnb.com.br",
+#     size='large', 
+#     # width=180
+# )
+
+col_logo_esq, col_logo_meio, col_logo_dir = st.columns([2, 1, 2])
+
+with col_logo_meio:
+    st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Airbnb_Logo_B%C3%A9lo.svg/3840px-Airbnb_Logo_B%C3%A9lo.svg.png", width=220)
 
 CAMINHO_ATUAL = Path(__file__).parent
 
-df = pd.read_csv(CAMINHO_ATUAL / 'AirBnBLimpo.csv')
-
-st.sidebar.header("🔍 Filtros")
-
+df = pd.read_csv(CAMINHO_ATUAL / 'data' / 'AirBnBLimpo.csv')
 
 # --- Métricas Principais (KPIs) ---
-st.subheader("Métricas gerais")
 
+st.markdown(
+    """
+    <style>
+    [data-testid="stVerticalBlock"] {
+        gap: 0.5rem !important;
+    }
+    h1, h2, h3 {
+        color: #FA8072 !important;
+        margin-top: 10px !important;
+        margin-bottom: 10px !important;
+        padding-bottom: 0px !important;
+    }
+    [data-testid="stMetric"] {
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        
+        /* Estilo da caixinha */
+        border: 2px solid #FFA07A; /* Borda salmão claro */
+        border-radius: 10px;       /* Cantos arredondados */
+        padding: 6px 15px !important;             Espaço interno para não sufocar o texto */
+        background-color: #FFF5EE; /* Fundo suave (Seashell) para destacar a caixinha */
+        box-shadow: 2px 2px 5px rgba(0,0,0,0.05); /* Sombra de leve */
+    }
+    
+    [data-testid="stMetricLabel"] {
+        display: flex;
+        justify-content: center;
+        text-align: center;
+        width: 100%;
+        margin-bottom: -5px !important;
+    }
+    
+    [data-testid="stMetricLabel"] > div {
+        color: #FA8072 !important; 
+        text-align: center;
+    }
+    
+    /* Mantém o valor centralizado e salmão */
+    [data-testid="stMetricValue"] > div {
+        color: #FA8072 !important; 
+        font-weight: bold;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+st.subheader("Métricas gerais")
 if not df.empty:
-    total_host = df['name'].count()
+    total_listing = len(df)
     preco_medio = df['price_cleaned'].mean()
-    review_medio = df['number_of_reviews'].mean()
-    # ganho_maximo_torneio = df.loc[df_filtrado['Prize_Clean'].idxmax(), "Tournament"]
-    # jogo_com_mais_top4 = contagem_por_jogo.idxmax()
-    # quantidade = contagem_por_jogo.max()
+    media_noites = df['minimum_nights'].mean()
+    bairro_mais_listado = df['neighbourhood_cleansed'].value_counts().idxmax()
+    quantidade_bairro_mais_listado = df['neighbourhood_cleansed'].value_counts().max()
 else:
     total_host, preco_medio, review_medio, _ = 0, 0, 0, "Nenhum dado encontrado"
 
 col1, col2, col3 = st.columns(3)
-
-col1.metric("Total de anúncios", f"{total_host:}")
+col1.metric("Total de anúncios", f"{total_listing:}")
 col2.metric("Preço médio", f"R${preco_medio:,.2f}")
-col3.metric("Quantidade média de reviews", f"{review_medio:,.0f}")
+col3.metric("Média de noites", f"{media_noites:,.0f}")
 
-graph1, graph2 = st.columns(2)
+col4 = st.columns(1)
 
-with graph1:
+
+col4[0].metric(
+    label="Bairro com mais anúncios", 
+    value=f"{bairro_mais_listado}: {quantidade_bairro_mais_listado}"
+)
+
+
+# st.markdown("---")
+
+col_graf1, col_graf2 = st.columns(2)
+
+with col_graf1:
+    if not df.empty:
+        df_tratamento = df.dropna(subset=['price_cleaned', 'latitude', 'longitude', 'neighbourhood_cleansed']).copy()
+
+        df_bairros = (
+            df_tratamento.groupby("neighbourhood_cleansed")
+            .agg(
+                latitude=("latitude", "mean"),
+                longitude=("longitude", "mean"),
+                total_anuncios=("neighbourhood_cleansed", "count"),
+                preco_medio=("price_cleaned", "mean"),
+            )
+            .reset_index()
+        )
+
+        limits = [(0, 10), (10, 50), (50, 100), (100, 1000), (1000, 20000)]
+        colors = ["#D1C7BD", "#FFC0A8", "#FFA07A", "#FA8072", "#D96B52"]
+
+        marker_sizes = [10, 15, 20, 25, 35]
+
+        fig = go.Figure()
+
+
+        for i in range(len(limits)):
+            lim_inf, lim_sup = limits[i]
+
+            df_sub = df_bairros[
+                (df_bairros["total_anuncios"] >= lim_inf)
+                & (df_bairros["total_anuncios"] < lim_sup)
+            ]
+
+            hover_text = [
+                f"<b>{row['neighbourhood_cleansed']}</b><br>"
+                f"Total de Anúncios: {row['total_anuncios']}<br>"
+                f"Preço Médio: R$ {row['preco_medio']:.2f}"
+                for _, row in df_sub.iterrows()
+            ]
+
+            fig.add_trace(
+                go.Scattermapbox(
+                    lat=df_sub["latitude"],
+                    lon=df_sub["longitude"],
+                    mode="markers",
+                    marker=dict(
+                        size=marker_sizes[i],
+                        color=colors[i],
+                        opacity=0.8,
+                    ),
+                    name=f"{lim_inf} - {lim_sup}",
+                    text=hover_text,
+                    hoverinfo="text",
+                )
+            )
+
+        fig.update_layout(
+            title={'text': "Anúncios do Airbnb por Bairro no Rio de Janeiro (Por Categoria)",
+                   'font': {'color': '#FA8072'}},
+            autosize=True,
+            hovermode="closest",
+            showlegend=True,
+            legend=dict(title="Intervalo de Anúncios", traceorder="normal"),
+            mapbox=dict(
+                style="carto-positron",
+                zoom=9.5,
+                center=dict(lat=-22.9, lon=-43.45),
+            ),
+            height=600,
+            margin={"r": 0, "t": 50, "l": 0, "b": 0},
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
+        
+    else:
+        st.warning("Nenhum dado para exibir no gráfico.")
+
+
+with col_graf2:
+    if not df.empty:
+        quantidade_anuncios = df['room_type'].value_counts(ascending=False).reset_index()
+        grafico_remoto = px.pie(
+            quantidade_anuncios,
+            names='room_type',
+            values='count',
+            title="Proporção dos anúncios por tipo de quarto",
+            hole=0.5,
+            color='room_type', # Garante que o mapeamento de cores seja explícito
+            color_discrete_sequence=px.colors.sequential.Peach_r,
+            labels={
+                'room_type': 'Tipo de Quarto', 
+                'count': 'Quantidade'
+            }
+        )
+        grafico_remoto.update_traces(textinfo='percent+label', pull=[0.05, 0, 0, 0])
+        grafico_remoto.update_layout(title_x=0.4, title={
+        'font': {'color': '#FA8072', 'size': 20}},)
+
+
+        st.plotly_chart(grafico_remoto, use_container_width=True)
+    else:
+        st.warning("Nenhum dado para exibir no gráfico dos tipos de trabalho.")
+    
+
+st.title("Anúncios por Bairro e Tipo de Quarto")
+with st.container():
     if not df.empty:
         df_agrupado = df.groupby(['neighbourhood_cleansed', 'room_type']).size().reset_index(name='Quantidade')
         
-        ordem_bairros = df_agrupado.groupby('neighbourhood_cleansed')['Quantidade'].sum().sort_values(ascending=True).index.tolist()
+        df_pivot = df_agrupado.pivot(
+            index='neighbourhood_cleansed', 
+            columns='room_type', 
+            values='Quantidade'
+        ).fillna(0)
         
-        df_agrupado['neighbourhood_cleansed'] = pd.Categorical(
-            df_agrupado['neighbourhood_cleansed'], 
+        for col in ["Todo o espaço", "Quarto privativo", "Quarto compartilhado"]:
+            if col not in df_pivot.columns:
+                df_pivot[col] = 0
+                
+        df_pivot['Total'] = df_pivot["Todo o espaço"] + df_pivot["Quarto privativo"] + df_pivot["Quarto compartilhado"]
+        
+        df_pivot = df_pivot.sort_values(
+            by=['Total', "Todo o espaço", "Quarto compartilhado", "Quarto privativo"], 
+            ascending=False
+        )
+        
+        ordem_bairros = df_pivot.index.tolist()
+        
+        df_plot = df_pivot.drop(columns=['Total']).reset_index().melt(
+            id_vars='neighbourhood_cleansed', 
+            var_name='room_type', 
+            value_name='Quantidade'
+        )
+        
+        df_plot['neighbourhood_cleansed'] = pd.Categorical(
+            df_plot['neighbourhood_cleansed'], 
             categories=ordem_bairros, 
             ordered=True
         )
+        df_plot['room_type'] = pd.Categorical(
+                    df_plot['room_type'],
+                    categories=["Todo o espaço", "Quarto privativo", "Quarto compartilhado"],
+                    ordered=True
+                )
         
-        df_plot = df_agrupado.sort_values('neighbourhood_cleansed')
+        df_plot = df_plot.sort_values(['neighbourhood_cleansed', 'room_type'])
 
         grafico_aluguei_por_bairro = px.bar(
             df_plot,  
-            x='Quantidade',
-            y='neighbourhood_cleansed',
-            orientation='h',
+            y='Quantidade',
+            x='neighbourhood_cleansed',
+            # orientation='v',
             color='room_type',
-            title="Aluguéis por Bairro e tipos de quarto",
+            color_discrete_sequence=px.colors.sequential.Peach_r,
             labels={
                 'Quantidade': 'Quantidade de Anúncios',  
                 'neighbourhood_cleansed': 'Bairro',        
                 'room_type': 'Tipo de Quarto'            
-            },
-            height=1200
+            }
         )
+
+        totais_por_bairro = df_pivot['Total'].to_dict()
+
         
-        grafico_aluguei_por_bairro.update_yaxes(categoryorder='array', categoryarray=ordem_bairros)
+        for bairro, total in totais_por_bairro.items():
+            grafico_aluguei_por_bairro.add_annotation(
+                y=total,
+                x=bairro,
+                text=f" {int(total)}",
+                showarrow=False,
+                yanchor='bottom',
+                font=dict(size=12)
+            )
 
         grafico_aluguei_por_bairro.update_layout(
-            legend=dict(
-                orientation="h",     # Define a orientação como horizontal
-                yanchor="bottom",    # Ancorado pela base da legenda
-                y=1.02,              # Posiciona logo acima da área do gráfico (1.0 é o limite do topo)
-                xanchor="center",    # Ancorado pelo centro horizontal
-                x=0.6                # Centralizado no meio do gráfico
+            xaxis_title=None,
+            yaxis_title=None,
+            legend=None,
+            xaxis=dict(
+                range=[-0.5, 19.5],
+                showgrid=False
             ),
-            dragmode=False
+            yaxis=dict(
+                fixedrange=True,
+                showgrid=False,
+                zeroline=False,
+                showticklabels=False
+            ),
+        )
+
+        grafico_aluguei_por_bairro.update_traces(
+            marker_line_width=0,
+            marker_line_color="rgba(0,0,0,0)"
         )
         
         
@@ -91,25 +306,26 @@ with graph1:
     else:
         st.warning("Nenhum dado para exibir no gráfico.")
 
-with graph2:
-    if not df.empty:
+# st.title("Quantidade reviews por anúncios")
+# with st.container():
+#     if not df.empty:
 
-        grafico_review = px.histogram(
-            df,
-            x='number_of_reviews',
-            labels={
-                'count': 'Quantidade de Anúncios',  
-                'number_of_reviews': 'Número de Reviews',        
-                'room_type': 'Tipo de Quarto'            
-            },
-            )
-        grafico_review.update_yaxes(title_text="Quantidade")
+#         grafico_review = px.histogram(
+#             df,
+#             x='number_of_reviews',
+#             labels={
+#                 'count': 'Quantidade de Anúncios',  
+#                 'number_of_reviews': 'Número de Reviews',        
+#                 'room_type': 'Tipo de Quarto'            
+#             },
+#             )
+#         grafico_review.update_yaxes(title_text="Quantidade")
 
         
-        grafico_review.update_traces(
-            hovertemplate="Faixa de Valor: %{x}<br>Quantidade: %{y}"
-        )
+#         grafico_review.update_traces(
+#             hovertemplate="Faixa de Valor: %{x}<br>Quantidade: %{y}"
+#         )
 
-        st.plotly_chart(grafico_review, use_container_width=True)
-    else:
-        st.warning("Nenhum dado para exibir no gráfico.")
+#         st.plotly_chart(grafico_review, use_container_width=True)
+#     else:
+#         st.warning("Nenhum dado para exibir no gráfico.")
