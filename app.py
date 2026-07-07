@@ -140,9 +140,9 @@ col4[0].metric(
 )
 
 
-# st.markdown("---")
+st.markdown("---")
 
-col_graf1, col_graf2 = st.columns(2)
+col_graf1, col_graf2 = st.columns([2.5,1])
 
 with col_graf1:
     if not df_filtrado.empty:
@@ -200,7 +200,9 @@ with col_graf1:
 
         fig.update_layout(
             title={'text': "Anúncios do Airbnb por Bairro no Rio de Janeiro (Por Categoria)",
-                   'font': {'color': '#FA8072'}},
+                   'font': {'color': '#FA8072', 'size': 20},
+                    'x': 0.5,
+                    'xanchor': 'center'},
             autosize=True,
             hovermode="closest",
             showlegend=True,
@@ -236,9 +238,17 @@ with col_graf2:
                 'count': 'Quantidade'
             }
         )
-        grafico_remoto.update_traces(textinfo='percent+label', pull=[0.05, 0, 0, 0])
-        grafico_remoto.update_layout(title_x=0.4, title={
-        'font': {'color': '#FA8072', 'size': 20}},)
+        grafico_remoto.update_traces(rotation=30,textinfo='percent+label', pull=[0.05, 0, 0, 0], textposition='outside', insidetextorientation='horizontal')
+        grafico_remoto.update_layout(title={
+                                            'font': {'color': '#FA8072', 'size': 20}},
+                                     legend={
+                                            'orientation': 'h',  # Deixa a legenda na horizontal
+                                            'yanchor': 'top',    # Alinha o topo da legenda com a coordenada Y
+                                            'y': -0.1,           # Empurra a legenda para baixo do gráfico (valores negativos saem do gráfico)
+                                            'xanchor': 'center', # Alinha o centro da legenda com a coordenada X
+                                            'x': 0.5             # Centraliza horizontalmente
+                                        }
+    )
 
 
         st.plotly_chart(grafico_remoto, use_container_width=True)
