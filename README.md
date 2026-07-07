@@ -26,7 +26,7 @@ This repository contains an end-to-end data science pipeline focused on data cle
 ```
 
 ## Dashboard
-[![Acess to the dashboard](image/Airbnb-streamlit-photo.png)](https://airbnb-felipe.streamlit.app/){:target="_blank"}
+[![Acess to the dashboard](image/Airbnb-streamlit-photo.png)](https://airbnb-felipe.streamlit.app/)
 
 ## Project Scope
 The analytical pipeline is split into two distinct execution environments to handle regional data variations:
