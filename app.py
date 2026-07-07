@@ -19,10 +19,10 @@ st.set_page_config(
 #     # width=180
 # )
 
-col_logo_esq, col_logo_meio, col_logo_dir = st.columns([2, 1, 2])
+col_logo_esq, col_logo_meio, col_logo_dir = st.columns([1, 1, 1])
 
-with col_logo_meio:
-    st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Airbnb_Logo_B%C3%A9lo.svg/3840px-Airbnb_Logo_B%C3%A9lo.svg.png", width=220)
+with col_logo_esq:
+    st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Airbnb_Logo_B%C3%A9lo.svg/3840px-Airbnb_Logo_B%C3%A9lo.svg.png", width=200)
 
 CAMINHO_ATUAL = Path(__file__).parent
 
@@ -174,7 +174,7 @@ with col_graf1:
                 zoom=9.5,
                 center=dict(lat=-22.9, lon=-43.45),
             ),
-            height=600,
+            height=500,
             margin={"r": 0, "t": 50, "l": 0, "b": 0},
         )
 
