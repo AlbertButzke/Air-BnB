@@ -5,6 +5,7 @@
 ![NumPy](https://img.shields.io/badge/numpy-%23013243.svg?style=for-the-badge&logo=numpy&logoColor=white)
 ![Pandas](https://img.shields.io/badge/pandas-%23150458.svg?style=for-the-badge&logo=pandas&logoColor=white)
 ![Plotly](https://img.shields.io/badge/Plotly-%233F4F75.svg?style=for-the-badge&logo=Plotly&logoColor=white)
+![Streamlit](https://img.shields.io/badge/Streamlit-%23FF4B4B.svg?style=for-the-badge&logo=Streamlit&logoColor=white)
 
 This repository contains an end-to-end data science pipeline focused on data cleaning, exploratory analysis, and building predictive models to forecast both **listing prices** and **user ratings** across global markets.
 
@@ -23,6 +24,9 @@ This repository contains an end-to-end data science pipeline focused on data cle
 ├── 🐍 app.py (work in progress)
 └── 📝 README.md
 ```
+
+## Dashboard
+[![Texto Alternativo](image/Airbnb-streamlit-photo.png)](https://airbnb-felipe.streamlit.app/)
 
 ## Project Scope
 The analytical pipeline is split into two distinct execution environments to handle regional data variations:
