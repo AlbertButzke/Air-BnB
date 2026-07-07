@@ -19,14 +19,10 @@ st.set_page_config(
 #     # width=180
 # )
 
-col_logo_esq, col_logo_meio, col_logo_dir = st.columns([1, 1, 1])
-
-with col_logo_esq:
-    st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Airbnb_Logo_B%C3%A9lo.svg/3840px-Airbnb_Logo_B%C3%A9lo.svg.png", width=200)
+    
 
 CAMINHO_ATUAL = Path(__file__).parent
 
-df = pd.read_csv(CAMINHO_ATUAL / 'data' / 'AirBnBLimpo.csv')
 
 # --- Métricas Principais (KPIs) ---
 
@@ -70,30 +66,70 @@ st.markdown(
         text-align: center;
     }
     
-    /* Mantém o valor centralizado e salmão */
     [data-testid="stMetricValue"] > div {
         color: #FA8072 !important; 
         font-weight: bold;
     }
+    div[data-testid="stSegmentedControl"] {
+        width: 100%;
+    }
+    div[data-testid="stSegmentedControl"] > div {
+        width: 100%;
+        display: flex;
+    }
+    div[data-testid="stSegmentedControl"] button {
+        flex: 1;
+    }
+    div[data-testid="stSegmentedControl"] [data-testid="stWidgetLabel"] p {
+        color: #FA8072 !important;
+    }
+
     </style>
     """,
     unsafe_allow_html=True
 )
 
+df = pd.read_csv(CAMINHO_ATUAL / 'data' / 'AirBnBLimpo.csv')
+col_logo_esq, col_botoes = st.columns([1, 3])
+
+with col_logo_esq:
+    st.image(
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Airbnb_Logo_B%C3%A9lo.svg/3840px-Airbnb_Logo_B%C3%A9lo.svg.png", 
+        width=200
+    )
+
+opcoes_quartos = ["Todo o espaço", "Quarto privativo", "Quarto compartilhado"]
+
+with col_botoes:
+    selecao = st.segmented_control(
+        "Tipo de Acomodação", 
+        options=opcoes_quartos, 
+        selection_mode="multi",
+        label_visibility="collapsed",
+        width="stretch"
+    )
+
+df_filtrado = df.copy()
+
+if selecao:
+    # df_filtrado = df_filtrado[df_filtrado["room_type"] == selecao]
+    df_filtrado = df_filtrado[df_filtrado["room_type"].isin(selecao)]
+
+
 st.subheader("Métricas gerais")
-if not df.empty:
-    total_listing = len(df)
-    preco_medio = df['price_cleaned'].mean()
-    media_noites = df['minimum_nights'].mean()
-    bairro_mais_listado = df['neighbourhood_cleansed'].value_counts().idxmax()
-    quantidade_bairro_mais_listado = df['neighbourhood_cleansed'].value_counts().max()
+if not df_filtrado.empty:
+    total_listing = len(df_filtrado)
+    preco_medio = df_filtrado['price_cleaned'].mean()
+    media_noites = df_filtrado['minimum_nights'].mean()
+    bairro_mais_listado = df_filtrado['neighbourhood_cleansed'].value_counts().idxmax()
+    quantidade_bairro_mais_listado = df_filtrado['neighbourhood_cleansed'].value_counts().max()
 else:
     total_host, preco_medio, review_medio, _ = 0, 0, 0, "Nenhum dado encontrado"
 
 col1, col2, col3 = st.columns(3)
 col1.metric("Total de anúncios", f"{total_listing:}")
 col2.metric("Preço médio", f"R${preco_medio:,.2f}")
-col3.metric("Média de noites", f"{media_noites:,.0f}")
+col3.metric("Média de noites mínimas", f"{media_noites:,.0f}")
 
 col4 = st.columns(1)
 
@@ -109,8 +145,8 @@ col4[0].metric(
 col_graf1, col_graf2 = st.columns(2)
 
 with col_graf1:
-    if not df.empty:
-        df_tratamento = df.dropna(subset=['price_cleaned', 'latitude', 'longitude', 'neighbourhood_cleansed']).copy()
+    if not df_filtrado.empty:
+        df_tratamento = df_filtrado.dropna(subset=['price_cleaned', 'latitude', 'longitude', 'neighbourhood_cleansed']).copy()
 
         df_bairros = (
             df_tratamento.groupby("neighbourhood_cleansed")
@@ -185,8 +221,8 @@ with col_graf1:
 
 
 with col_graf2:
-    if not df.empty:
-        quantidade_anuncios = df['room_type'].value_counts(ascending=False).reset_index()
+    if not df_filtrado.empty:
+        quantidade_anuncios = df_filtrado['room_type'].value_counts(ascending=False).reset_index()
         grafico_remoto = px.pie(
             quantidade_anuncios,
             names='room_type',
@@ -212,8 +248,8 @@ with col_graf2:
 
 st.title("Anúncios por Bairro e Tipo de Quarto")
 with st.container():
-    if not df.empty:
-        df_agrupado = df.groupby(['neighbourhood_cleansed', 'room_type']).size().reset_index(name='Quantidade')
+    if not df_filtrado.empty:
+        df_agrupado = df_filtrado.groupby(['neighbourhood_cleansed', 'room_type']).size().reset_index(name='Quantidade')
         
         df_pivot = df_agrupado.pivot(
             index='neighbourhood_cleansed', 
@@ -308,10 +344,10 @@ with st.container():
 
 # st.title("Quantidade reviews por anúncios")
 # with st.container():
-#     if not df.empty:
+#     if not df_filtrado.empty:
 
 #         grafico_review = px.histogram(
-#             df,
+#             df_filtrado,
 #             x='number_of_reviews',
 #             labels={
 #                 'count': 'Quantidade de Anúncios',  
