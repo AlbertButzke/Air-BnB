@@ -46,17 +46,17 @@ The analytical pipeline is split into two distinct execution environments to han
 To predict listing prices, models were trained on the cleaned data and benchmarked against a Dummy Regressor baseline ($R^2 \approx 0.00$). Advanced algorithms like **XGBoost** and **Decision Trees** significantly outperformed baseline and linear shrinkage methods (**Lasso**).
 
 ### Overall Performance (Cleaned Dataset)
-* **XGBoost Regressor:** $R^2 = 0.5169$
-* **Decision Tree Regressor:** $R^2 = 0.4255$
+* **XGBoost Regressor:** $R^2 = 0.5956$
+* **Decision Tree Regressor:** $R^2 = 0.3987$
 
 ### Segmented Analysis by Room Type
 Market dynamics shift heavily based on the type of accommodation. Segmenting the data revealed that entire properties are far more predictable than shared spaces:
 
 | Room Type | Decision Tree ($R^2$) | XGBoost ($R^2$) |
 | :--- | :---: | :---: |
-| **Entire home/apt** | 0.4200 | **0.4884** |
-| **Private room** | 0.1375 | **0.2198** |
-| **Shared room** | 0.0394 | **0.3219** |
+| **Entire home/apt** | 0.4311 | **0.5365** |
+| **Private room** | 0.0814 | **0.0492** |
+| **Shared room** | 0.0054 | **0.0167** |
 
 ## Performance & Load Testing (AWS Lambda)
 
