@@ -12,6 +12,7 @@ st.set_page_config(
     layout="wide",
 )
 
+api_key = st.secrets["CARTO_API_KEY"]
 # st.logo(
 #     image="https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Airbnb_Logo_B%C3%A9lo.svg/3840px-Airbnb_Logo_B%C3%A9lo.svg.png",
 #     link="https://www.airbnb.com.br",
@@ -98,7 +99,7 @@ with col_logo_esq:
         width=200
     )
 
-opcoes_quartos = ["Todo o espaço", "Quarto privativo", "Quarto compartilhado"]
+opcoes_quartos = ["Todo o espaço", "Quarto de hotel", "Quarto privativo", "Quarto compartilhado"]
 
 with col_botoes:
     selecao = st.segmented_control(
@@ -198,6 +199,8 @@ with col_graf1:
                 )
             )
 
+        carto_key = st.secrets.get("CARTO_API_KEY", "SUA_CHAVE_AQUI")
+
         fig.update_layout(
             title={'text': "Anúncios do Airbnb por Bairro no Rio de Janeiro (Por Categoria)",
                    'font': {'color': '#FA8072', 'size': 20},
@@ -208,10 +211,15 @@ with col_graf1:
             showlegend=True,
             legend=dict(title="Intervalo de Anúncios", traceorder="normal"),
             mapbox=dict(
-                style="carto-positron",
-                zoom=9.5,
-                center=dict(lat=-22.9, lon=-43.45),
-            ),
+                        style="white-bg",
+                        layers=[{
+                            "below": "traces",
+                            "sourcetype": "raster",
+                            "source": ["https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}.png"]
+                        }],
+                        zoom=9.5,
+                        center=dict(lat=-22.9, lon=-43.45),
+                    ),
             height=500,
             margin={"r": 0, "t": 50, "l": 0, "b": 0},
         )
