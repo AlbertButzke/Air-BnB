@@ -48,9 +48,10 @@ st.markdown(
         
         /* Estilo da caixinha */
         border: 2px solid #FFA07A; /* Borda salmão claro */
-        border-radius: 10px;       /* Cantos arredondados */
-        padding: 6px 15px !important;             Espaço interno para não sufocar o texto */
-        background-color: #FFF5EE; /* Fundo suave (Seashell) para destacar a caixinha */
+        border-radius: 8px;       /* Cantos arredondados */
+        padding: 4px 15px !important;             /*Espaço interno para não sufocar o texto */
+        min-height: 60px !important;   /* Controla a altura mínima */
+        /*background-color: #FFF5EE; Fundo suave (Seashell) para destacar a caixinha */
         box-shadow: 2px 2px 5px rgba(0,0,0,0.05); /* Sombra de leve */
     }
     
@@ -59,18 +60,28 @@ st.markdown(
         justify-content: center;
         text-align: center;
         width: 100%;
-        margin-bottom: -5px !important;
+        margin-bottom: 0px !important;
+        padding-bottom: 0px !important;
     }
     
     [data-testid="stMetricLabel"] > div {
         color: #FA8072 !important; 
-        text-align: center;
+        font-size: 0.85rem !important;  /* Rótulo um pouco mais delicado */
+        line-height: 1.1 !important;
     }
     
+    [data-testid="stMetricValue"] {
+        margin-top: -4px !important;    /* Puxa o número para mais perto do texto */
+        padding-top: 0px !important;
+    }
+
     [data-testid="stMetricValue"] > div {
         color: #FA8072 !important; 
         font-weight: bold;
+        font-size: 1.5rem !important;   /* Altura do número ajustada (padrão é quase 2.2rem) */
+        line-height: 1.2 !important;
     }
+
     div[data-testid="stSegmentedControl"] {
         width: 100%;
     }
@@ -128,21 +139,21 @@ if not df_filtrado.empty:
 else:
     total_host, preco_medio, review_medio, _ = 0, 0, 0, "Nenhum dado encontrado"
 
-col1, col2, col3 = st.columns(3)
+col1, col2, col3, col4 = st.columns(4)
 col1.metric("Total de anúncios", f"{total_listing:}")
 col2.metric("Preço médio", f"R${preco_medio:,.2f}")
 col3.metric("Média de noites mínimas", f"{media_noites:,.0f}")
 
-col4 = st.columns(1)
+# col4 = st.columns(1)
 
 
-col4[0].metric(
+col4.metric(
     label="Bairro com mais anúncios", 
     value=f"{bairro_mais_listado}: {quantidade_bairro_mais_listado}"
 )
 
 
-st.markdown("---")
+# st.markdown("---")
 
 col_graf1, col_graf2 = st.columns([2.5,1])
 
