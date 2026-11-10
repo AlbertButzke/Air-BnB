@@ -265,8 +265,9 @@ with col_graf2:
         st.warning("Nenhum dado para exibir no gráfico dos tipos de trabalho.")
     
 
-st.title("Anúncios por Bairro e Tipo de Quarto")
-with st.container():
+
+col_graf3, col_graf4 = st.columns([2.5,1])
+with col_graf3:
     if not df_filtrado.empty:
         df_agrupado = df_filtrado.groupby(['neighbourhood_cleansed', 'room_type']).size().reset_index(name='Quantidade')
         
@@ -285,7 +286,7 @@ with st.container():
         df_pivot = df_pivot.sort_values(
             by=['Total', "Todo o espaço", "Quarto de hotel", "Quarto compartilhado", "Quarto privativo"], 
             ascending=False
-        )
+        ).head(10)
         
         ordem_bairros = df_pivot.index.tolist()
         
@@ -336,11 +337,20 @@ with st.container():
             )
 
         grafico_aluguei_por_bairro.update_layout(
+            title={
+                    'text': "Anúncios por Bairro e Tipo de Quarto",
+                    'font': {'color': '#FA8072', 'size': 20},
+                    'x': 0.5,            # Centraliza o título
+                    'xanchor': 'center',
+                    'y': 0.98,           # Joga o título mais para cima (0 a 1)
+                    'yanchor': 'top'
+                },
+            margin=dict(t=80, b=40, l=20, r=20),
             xaxis_title=None,
             yaxis_title=None,
             legend=None,
             xaxis=dict(
-                range=[-0.5, 19.5],
+                range=[-0.5, 9.5],
                 showgrid=False
             ),
             yaxis=dict(
@@ -360,6 +370,75 @@ with st.container():
         st.plotly_chart(grafico_aluguei_por_bairro, use_container_width=True)
     else:
         st.warning("Nenhum dado para exibir no gráfico.")
+
+with col_graf4:
+    if not df_filtrado.empty:
+        # Filtra registros válidos e calcula o preço médio por bairro
+        df_top5_caros = (
+            df_filtrado.dropna(subset=['price_cleaned', 'neighbourhood_cleansed'])
+            .groupby('neighbourhood_cleansed')
+            .agg(
+                preco_medio=('price_cleaned', 'mean'),
+                total_anuncios=('price_cleaned', 'count')
+            )
+            .reset_index()
+            .sort_values(by='preco_medio', ascending=False)
+            .head(5)
+        )
+
+        # Ordena de forma ascendente para que o mais caro fique no topo do gráfico horizontal
+        df_top5_caros = df_top5_caros.sort_values(by='preco_medio', ascending=True)
+
+        # Cria o gráfico de barras horizontais
+        fig_top5 = px.bar(
+            df_top5_caros,
+            x='preco_medio',
+            y='neighbourhood_cleansed',
+            orientation='h',
+            text='preco_medio',
+            color='preco_medio',
+            color_continuous_scale=px.colors.sequential.Peach,
+            labels={
+                'preco_medio': 'Preço Médio (R$)',
+                'neighbourhood_cleansed': 'Bairro'
+            }
+        )
+
+        # Formata o texto na ponta da barra como moeda brasileira (ex: R$ 1.250,00)
+        fig_top5.update_traces(
+            texttemplate=' R$ %{x:,.2f}',
+            textposition='outside',
+            marker_line_width=0
+        )
+
+        fig_top5.update_layout(
+            title={
+                'text': "Top 5 Bairros com Maior Preço Médio",
+                'font': {'color': '#FA8072', 'size': 20},
+                'x': 0.5,
+                'xanchor': 'center'
+            },
+            xaxis_title=None,
+            yaxis_title=None,
+            coloraxis_showscale=False, # Oculta a barra de cores lateral
+            xaxis=dict(
+                showgrid=False,
+                showticklabels=False,
+                zeroline=False,
+                # Dá um respiro à direita para o texto do valor não cortar
+                range=[0, df_top5_caros['preco_medio'].max() * 1.25]
+            ),
+            yaxis=dict(
+                showgrid=False
+            ),
+            height=450,
+            margin=dict(l=20, r=20, t=50, b=20)
+        )
+
+        st.plotly_chart(fig_top5, use_container_width=True)
+    else:
+        st.warning("Nenhum dado para exibir no gráfico.")
+
 
 # st.title("Quantidade reviews por anúncios")
 # with st.container():
