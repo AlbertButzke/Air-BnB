@@ -12,7 +12,7 @@ st.set_page_config(
     layout="wide",
 )
 
-api_key = st.secrets["CARTO_API_KEY"]
+carto_key = st.secrets["CARTO_API_KEY"]
 # st.logo(
 #     image="https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Airbnb_Logo_B%C3%A9lo.svg/3840px-Airbnb_Logo_B%C3%A9lo.svg.png",
 #     link="https://www.airbnb.com.br",
@@ -111,6 +111,7 @@ with col_botoes:
     )
 
 df_filtrado = df.copy()
+valores_quartos_tipos = df_filtrado["room_type"].unique().tolist()
 
 if selecao:
     # df_filtrado = df_filtrado[df_filtrado["room_type"] == selecao]
@@ -199,10 +200,8 @@ with col_graf1:
                 )
             )
 
-        carto_key = st.secrets.get("CARTO_API_KEY", "SUA_CHAVE_AQUI")
-
         fig.update_layout(
-            title={'text': "Anúncios do Airbnb por Bairro no Rio de Janeiro (Por Categoria)",
+            title={'text': "Anúncios do Airbnb por Bairro no Rio de Janeiro",
                    'font': {'color': '#FA8072', 'size': 20},
                     'x': 0.5,
                     'xanchor': 'center'},
@@ -210,6 +209,7 @@ with col_graf1:
             hovermode="closest",
             showlegend=True,
             legend=dict(title="Intervalo de Anúncios", traceorder="normal"),
+            
             mapbox=dict(
                 style="open-street-map",
                 zoom=9.5,
@@ -232,7 +232,6 @@ with col_graf2:
             quantidade_anuncios,
             names='room_type',
             values='count',
-            title="Proporção dos anúncios por tipo de quarto",
             hole=0.5,
             color='room_type', # Garante que o mapeamento de cores seja explícito
             color_discrete_sequence=px.colors.sequential.Peach_r,
@@ -243,8 +242,15 @@ with col_graf2:
         )
         grafico_remoto.update_traces(rotation=30,textinfo='percent+label', pull=[0.05, 0, 0, 0], textposition='outside', insidetextorientation='horizontal')
         grafico_remoto.update_layout(title={
-                                            'font': {'color': '#FA8072', 'size': 20}},
-                                     legend={
+                                            'text': "Proporção dos anúncios por tipo de quarto",
+                                            'font': {'color': '#FA8072', 'size': 20},
+                                            'x': 0.5,            # Centraliza o título
+                                            'xanchor': 'center',
+                                            'y': 0.98,           # Joga o título mais para cima (0 a 1)
+                                            'yanchor': 'top'
+                                        },
+                                        margin=dict(t=80, b=40, l=20, r=20),
+                                        legend={
                                             'orientation': 'h',  # Deixa a legenda na horizontal
                                             'yanchor': 'top',    # Alinha o topo da legenda com a coordenada Y
                                             'y': -0.1,           # Empurra a legenda para baixo do gráfico (valores negativos saem do gráfico)
@@ -270,14 +276,14 @@ with st.container():
             values='Quantidade'
         ).fillna(0)
         
-        for col in ["Todo o espaço", "Quarto privativo", "Quarto compartilhado"]:
+        for col in valores_quartos_tipos:
             if col not in df_pivot.columns:
                 df_pivot[col] = 0
                 
-        df_pivot['Total'] = df_pivot["Todo o espaço"] + df_pivot["Quarto privativo"] + df_pivot["Quarto compartilhado"]
+        df_pivot['Total'] = df_pivot["Todo o espaço"] + df_pivot["Quarto privativo"] + df_pivot["Quarto compartilhado"] + df_pivot["Quarto de hotel"]
         
         df_pivot = df_pivot.sort_values(
-            by=['Total', "Todo o espaço", "Quarto compartilhado", "Quarto privativo"], 
+            by=['Total', "Todo o espaço", "Quarto de hotel", "Quarto compartilhado", "Quarto privativo"], 
             ascending=False
         )
         
@@ -296,7 +302,7 @@ with st.container():
         )
         df_plot['room_type'] = pd.Categorical(
                     df_plot['room_type'],
-                    categories=["Todo o espaço", "Quarto privativo", "Quarto compartilhado"],
+                    categories=valores_quartos_tipos,
                     ordered=True
                 )
         
