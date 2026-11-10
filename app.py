@@ -211,15 +211,10 @@ with col_graf1:
             showlegend=True,
             legend=dict(title="Intervalo de Anúncios", traceorder="normal"),
             mapbox=dict(
-                        style="white-bg",
-                        layers=[{
-                            "below": "traces",
-                            "sourcetype": "raster",
-                            "source": ["https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}.png"]
-                        }],
-                        zoom=9.5,
-                        center=dict(lat=-22.9, lon=-43.45),
-                    ),
+                style="open-street-map",
+                zoom=9.5,
+                center=dict(lat=-22.9, lon=-43.45),
+            ),
             height=500,
             margin={"r": 0, "t": 50, "l": 0, "b": 0},
         )
