@@ -1,5 +1,6 @@
 # Airbnb Listing Price & Rating Prediction
-### Languages & Core:
+
+### Linguagens e Ferramentas:
 ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
 ![Scikit-Learn](https://img.shields.io/badge/scikit--learn-%23F7931E.svg?style=for-the-badge&logo=scikit-learn&logoColor=white)
 ![NumPy](https://img.shields.io/badge/numpy-%23013243.svg?style=for-the-badge&logo=numpy&logoColor=white)
@@ -7,100 +8,140 @@
 ![Plotly](https://img.shields.io/badge/Plotly-%233F4F75.svg?style=for-the-badge&logo=Plotly&logoColor=white)
 ![Streamlit](https://img.shields.io/badge/Streamlit-%23FF4B4B.svg?style=for-the-badge&logo=Streamlit&logoColor=white)
 
-This repository contains an end-to-end data science pipeline focused on data cleaning, exploratory analysis, and building predictive models to forecast both **listing prices** and **user ratings** across global markets.
+Este repositório contém um pipeline completo de ciência de dados (*end-to-end*) focado na extração, limpeza de dados, análise exploratória (EDA), *benchmarking* geoespacial e modelagem preditiva multivariada para estimar **preços de diárias** do Airbnb utilizando **Aprendizado de Máquina** (*Machine Learning*). 
 
-# Directory Tree: AirBnb
+O fluxo do projeto abrange desde o tratamento de dados brutos da iniciativa *Inside Airbnb*, lidando com valores ausentes, remoção de *outliers* e engenharia de atributos espaciais, até o treinamento, validação cruzada e otimização de algoritmos de regressão e *boosting* (como Lasso, Decision Trees e XGBoost).
+
+Além da camada analítica e preditiva, o projeto conta com um **[Dashboard Interativo no Streamlit](https://airbnb-felipe.streamlit.app/)** alimentado pelas bases de dados tratadas e estruturadas (`AirBnBLimpo*.csv`). Por seguirem um formato tabular limpo e padronizado, essas mesmas tabelas analíticas também podem ser facilmente integradas e exploradas em ferramentas de *Business Intelligence* (BI), como o **Power BI**, para a criação de relatórios gerenciais e análises visuais de mercado.
+
+---
+
+## 📂 Árvore de Diretórios
+
 ```
 📂 Air-BnB
+├── 📂 .devcontainer
+│   └── 📄 devcontainer.json
 ├── 📂 data
+│   ├── 📄 AirBnB_raw_selected_columns.csv
+│   ├── 📄 AirBnBLimpo_Chicago.csv
 │   ├── 📄 AirBnBLimpo_London.csv
 │   ├── 📄 AirBnBLimpo_New-york-city.csv
 │   └── 📄 AirBnBLimpo.csv
+├── 📂 image
+│   └── 📄 Airbnb-streamlit-photo.png
 ├── 📂 notebooks
 │   ├── 📓 01_rio_de_janeiro_analysis.ipynb
 │   ├── 📓 02_world_cities_analysis.ipynb
-│   └── 📝 readme.md
+│   └── 📄 xgboost_world_London.joblib
 ├── 📂 src
-├── 🐍 app.py (work in progress)
-└── 📝 README.md
+├── 📄 .gitignore
+├── 📄 README.md
+├── 📄 app.py
+└── 📄 requirements.txt
 ```
+
+---
 
 ## Dashboard
 <a href="https://airbnb-felipe.streamlit.app/" target="_blank">
-  <img src="image/Airbnb-streamlit-photo.png" alt="Access to the dashboard">
+  <img src="image/Airbnb-streamlit-photo.png" alt="Acesso ao dashboard">
 </a>
 
-## Project Scope
-The analytical pipeline is split into two distinct execution environments to handle regional data variations:
-* **Rio de Janeiro:** A localized study analyzing 40,769 entries. This pipeline includes robust data cleaning, outlier removal, and localized risk-assessment features (such as neighborhood safety metrics).
-* **Global Cities:** A generalized pipeline built to scale across other cities worldwide. It maintains the core analytical structure but bypasses the specific Rio cleaning steps to respect unique global data distributions ($R^2$ performance ranges consistently from 0.40 to 0.60).
+---
 
-## Key Features
-* **Data Cleaning & Preprocessing:** Handling missing values, targeted outlier filtering, and domain-specific feature engineering.
-* **Exploratory Data Analysis (EDA):** Visualizations mapping out key market trends, geographical pricing concentrations, and feature correlations.
-* **Segmented Price Prediction:** Regression modeling built dynamically around property room types to capture varying market mechanics.
-* **Rating Modeling (WIP):** Benchmarking framework comparing multiclass classification vs. regression architectures to predict user satisfaction.
-
-## Model Performance (Rio de Janeiro)
-
-To predict listing prices, models were trained on the cleaned data and benchmarked against a Dummy Regressor baseline ($R^2 \approx 0.00$). Advanced algorithms like **XGBoost** and **Decision Trees** significantly outperformed baseline and linear shrinkage methods (**Lasso**).
-
-### Overall Performance (Cleaned Dataset)
-* **XGBoost Regressor:** $R^2 = 0.5956$
-* **Decision Tree Regressor:** $R^2 = 0.3987$
-
-### Segmented Analysis by Room Type
-Market dynamics shift heavily based on the type of accommodation. Segmenting the data revealed that entire properties are far more predictable than shared spaces:
-
-| Room Type | Decision Tree ($R^2$) | XGBoost ($R^2$) |
-| :--- | :---: | :---: |
-| **Entire home/apt** | 0.4311 | **0.5365** |
-| **Private room** | 0.0814 | **0.0492** |
-| **Shared room** | 0.0054 | **0.0167** |
-
-## Performance & Load Testing (AWS Lambda)
-
-The global XGBoost model was deployed as a serverless function on **AWS Lambda** and subjected to a load test using **Locust** to evaluate its behavior, throughput, and latency under continuous traffic. 
-
-The inference pipeline loads the trained model using `joblib` inside the Lambda environment.
-
-### 📊 Test Configuration & Environment
-* **Infrastructure:** AWS Lambda
-* **Deployment Packaging:** Trained XGBoost model loaded via `joblib`
-* **Load Testing Tool:** Locust
-* **Simulated Users:** 20 maximum concurrent users
-* **Spawn Rate:** 2 users/second
+## Escopo do Projeto
+O pipeline analítico está dividido em dois ambientes de execução distintos:
+- **Rio de Janeiro (Estudo Aprofundado):** Um estudo localizado analisando 48.713 registros brutos (~40.131 registros válidos após a limpeza). Inclui limpeza robusta de dados, remoção de outliers com teto de R$ 10.000, redução de multicolinearidade e recursos de avaliação de risco local (como métricas de segurança de bairros).
+- **Cidades Globais:** Um pipeline generalizado construído para escalar por outras cidades ao redor do mundo (Londres, Nova York e Chicago), mantendo a estrutura analítica central.
 
 ---
 
-### Load Test Results & Metrics
-
-The pipeline successfully handled continuous traffic with **zero failures** under the simulated load. Below are the key performance indicators extracted from the test run:
-
-#### Request Statistics
-| Type | Endpoint | Total Requests | Failures | Average Latency | Min Latency | Max Latency (Cold Start) | Throughput (RPS) |
-| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **POST** | `/predict` | **5,582** | **0** | **57.79 ms** | **31 ms** | **4,601 ms** | **9.67 req/s** |
-
-#### Response Time Percentiles (Latency Distribution)
-| 50% (Median) | 60% | 70% | 80% | 90% | 95% | 99% | 100% ($p_{100}$) |
-| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **43 ms** | 46 ms | 50 ms | 56 ms | 81 ms | 110 ms | 130 ms | **4,600 ms** |
+## Principais Recursos e Engenharia de Atributos
+- **Limpeza e Pré-processamento:** Tratamento de valores ausentes, filtragem direcionada de outliers e engenharia de recursos específica do domínio.
+- **Recursos Geoespaciais e de Segurança:** Criação do indicador binário `bairro_perigoso` capturando sensibilidades de segurança pública e uso contínuo de coordenadas (`latitude`, `longitude`).
+- **Seleção de Atributos e Controle de Redundância:** Exclusão de variáveis altamente colineares como `bedrooms` (priorizando `bathrooms` e `accommodates`) e remoção de `review_scores_rating` devido à alta assimetria e padrões MNAR (Missing Not at Random).
 
 ---
 
-### Key Findings & Production Insights
+## Desempenho dos Modelos e Benchmarking (Rio de Janeiro)
 
-1. **Ultra-Low Steady State Latency:** In steady-state conditions, the model demonstrates exceptional performance. The median latency ($p_{50}$) is only **43 ms**, and even at the 99th percentile ($p_{99}$), the response time stays low at **130 ms**.
-2. **The Cold Start Phenomenon:** The maximum recorded latency reached **4.6 seconds** ($p_{100}$). As clearly shown in the *Response Times* chart, this was an isolated spike at the very beginning of the test window, directly corresponding to the initial AWS Lambda container provisioning (Cold Start) and the overhead of loading the `joblib` model into memory.
-3. **High Reliability:** The system maintained a rock-solid **100% success rate** (0 failures out of 5,582 requests) throughout the duration of the test, maintaining a stable throughput of ~9.67 RPS with 20 concurrent users.
+### 1. Baseline Geoespacial (Apenas Coordenadas)
+Para estabelecer uma régua comparativa inicial, os modelos foram treinados utilizando estritamente as coordenadas espaciais:
+* **Dummy Regressor (Média):** $R^2 \approx 0.00$, MAE = R$ 487,92, RMSE = R$ 900,59
+* **Lasso Regressor:** $R^2 = 0.0506$, MAE = R$ 465,19, RMSE = R$ 877,49
+* **Decision Tree Regressor:** $R^2 = 0.1421$, MAE = R$ 436,42, RMSE = R$ 834,15
+* **XGBoost Regressor:** $R^2 = 0.1531$, MAE = R$ 431,08, RMSE = R$ 828,80
 
-### Production Mitigation for Scale
-In a large-scale production scenario (similar to Airbnb), the 4.6-second Cold Start latency observed at the $p_{100}$ level would be fully mitigated by leveraging **AWS Provisioned Concurrency** (keeping warm Lambda instances initialized) or migrating the containerized inference pipeline to a **Kubernetes (EKS)** cluster with always-on nodes. This architectural adjustment guarantees sub-150ms latency for 100% of end-users.
+### 2. Pipeline Multivariado (Com as Features Selecionadas)
+A integração de atributos físicos (`bathrooms`, `accommodates`, `beds`), tipologias de quartos, bairros seguros e regras operacionais elevou significativamente o poder preditivo:
+* **Lasso Regressor (Polinomial Grau 2):** $R^2 = 0.4319$, MAE = R$ 341,23, RMSE = R$ 658,60
+* **Decision Tree Regressor (Otimizado via GridSearchCV):** $R^2 = 0.4618$, MAE = R$ 329,07, RMSE = R$ 641,00
+* **XGBoost Regressor (Otimizado via GridSearchCV):** $R^2 = 0.5284$, MAE = R$ 301,13, RMSE = R$ 600,05
 
 ---
 
-## Work in Progress: Rating Prediction
-The pipeline is currently being expanded to tackle user rating forecasting. The next phase will benchmark the performance of:
-1. **Regression Models** (predicting exact continuous rating scores).
-2. **Multiclass Classification Models** (predicting rating brackets/tiers).
+## Destaques de Importância das Features (XGBoost)
+A análise de importância relativa dos atributos confirma uma hierarquia lógica consistente para o mercado imobiliário:
+1. **`bathrooms` (~27%):** Atua como proxy direta de porte, luxo e padrão construtivo do imóvel.
+2. **`room_type` (~16% para Todo o espaço):** O nível de privacidade estabelece a faixa de tarifa base.
+3. **`accommodates` (~11%):** A capacidade máxima de hóspedes escala a precificação de forma dinâmica.
+4. **`number_of_reviews`, `longitude`, `latitude` (~17% combinados):** A tração comercial e as coordenadas espaciais refinam o valor de mercado local.
+
+---
+
+## Testes de Desempenho e Carga (AWS Lambda)
+
+O modelo XGBoost global foi implantado como uma função *serverless* no **AWS Lambda** e submetido a um teste de carga utilizando o **Locust** para avaliar seu comportamento, vazão (*throughput*) e latência sob tráfego contínuo.
+
+O pipeline de inferência carrega o modelo treinado utilizando `joblib` dentro do ambiente Lambda.
+
+### Configuração de Teste e Ambiente
+
+* **Infraestrutura:** AWS Lambda
+* **Empacotamento de Implantação:** Modelo XGBoost treinado carregado via `joblib`
+* **Ferramenta de Teste de Carga:** Locust
+* **Usuários Simulados:** 20 usuários concorrentes no máximo
+* **Taxa de Criação (*Spawn Rate*):** 2 usuários/segundo
+
+---
+
+### Resultados do Teste de Carga e Métricas
+
+O pipeline lidou com sucesso com o tráfego contínuo com **zero falhas** sob a carga simulada. Abaixo estão os principais indicadores de desempenho extraídos da execução do teste:
+
+#### Estatísticas de Requisições
+
+| Tipo | Endpoint | Total de Requisições | Falhas | Latência Média | Latência Mínima | Latência Máxima (Cold Start) | Vazão (RPS) |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| **POST** | `/predict` | **5.582** | **0** | **57,79 ms** | **31 ms** | **4.601 ms** | **9,67 req/s** |
+
+#### Percentis de Tempo de Resposta (Distribuição de Latência)
+
+| 50% (Mediana) | 60% | 70% | 80% | 90% | 95% | 99% | 100% ($p_{100}$) |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| **43 ms** | 46 ms | 50 ms | 56 ms | 81 ms | 110 ms | 130 ms | **4.600 ms** |
+
+---
+
+### Principais Descobertas e Insights de Produção
+
+1. **Latência Ultra-Baixa em Estado Estacionário:** Em condições de estado estacionário, o modelo demonstra um desempenho excepcional. A latência mediana ($p_{50}$) é de apenas **43 ms** e, mesmo no percentil 99 ($p_{99}$), o tempo de resposta permanece baixo em **130 ms**.
+2. **O Fenômeno do Cold Start (Inicialização Fria):** A latência máxima registrada atingiu **4,6 segundos** ($p_{100}$). Conforme demonstrado claramente no gráfico de *Tempos de Resposta*, este foi um pico isolado bem no início da janela de teste, correspondendo diretamente ao provisionamento inicial do contêiner AWS Lambda (Cold Start) e ao custo de carregamento do modelo `joblib` na memória.
+3. **Alta Confiabilidade:** O sistema manteve uma sólida **taxa de sucesso de 100%** (0 falhas em 5.582 requisições) durante toda a duração do teste, mantendo uma vazão estável de ~9,67 RPS com 20 usuários concorrentes.
+
+### Mitigação em Produção para Escala
+
+Em um cenário de produção em grande escala (semelhante ao Airbnb), a latência de Cold Start de 4,6 segundos observada no nível $p_{100}$ seria totalmente mitigada aproveitando o recurso **AWS Provisioned Concurrency** (mantendo instâncias Lambda aquecidas e inicializadas) ou migrando o pipeline de inferência em contêiner para um cluster **Kubernetes (EKS)** com nós sempre ativos. Este ajuste arquitetural garante uma latência inferior a 150 ms para 100% dos usuários finais.
+
+---
+
+## Trabalho em Andamento:
+
+O pipeline está sendo expandido no momento para lidar com a previsão de avaliações de usuários. A próxima fase fará o benchmarking do desempenho de:
+
+1. **Modelos de Regressão** (prevendo pontuações contínuas exatas de avaliação).
+2. **Modelos de Classificação Multiclasse** (prevendo faixas/níveis de avaliação).
+
+Além disso, está em desenvolvimento um trabalho tambem de:
+3. **Modelos de Recomendação de Quarto** (recomendação semântica de quartos utilizando modelos baseados na arquitetura Transformer).
